@@ -1,0 +1,9 @@
+{
+    "compileOptions" : {
+        "baseUrl":"./",
+        "paths":{
+            "@components/*":["components/*"],
+            "@screens/*":["screens/*"],
+        }
+    }
+}
