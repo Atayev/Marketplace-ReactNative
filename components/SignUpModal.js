@@ -15,12 +15,46 @@ import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { Formik } from "formik";
 import { loginValidationSchema } from "../utils/loginValidationSchema";
+import auth from "@react-native-firebase/auth";
+import firestore from "@react-native-firebase/firestore";
+
 const SignUpModal = () => {
   const [show, setShow] = useState(false);
   const navigation = useNavigation();
 
-  //Google authetification
-  const handleGLogin = () => {};
+  //Google register
+  const handleGRegister = () => {};
+  const handleRegister = async (values) => {
+    const { email, password, name } = values;
+    const userCredential = await auth()
+      .createUserWithEmailAndPassword(email, password)
+      .then(() => {
+        auth().currentUser.updateProfile({
+          displayName: name,
+        });
+        const user = userCredential.user;
+        const valuesCopy = { ...values };
+        delete valuesCopy.password;
+        valuesCopy.timestamp = firestore.Timestamp.now();
+        firestore()
+          .collection("users")
+          .doc(user.uid)
+          .set(valuesCopy)
+          .then(() => console.log("users added"));
+      })
+      .catch((error) => {
+        if (error.code === "auth/email-already-in-use") {
+          console.log("That email address is already in use!");
+        }
+
+        if (error.code === "auth/invalid-email") {
+          console.log("That email address is invalid!");
+        }
+
+        console.error(error);
+      });
+  };
+
   return (
     <Container padding={4} w="full">
       <Heading paddingTop={10}>
@@ -31,7 +65,7 @@ const SignUpModal = () => {
       <Formik
         validationSchema={loginValidationSchema}
         initialValues={{ name: "", email: "", password: "" }}
-        onSubmit={(values) => console.log(values)}
+        onSubmit={(values) => handleRegister(values)}
       >
         {({
           handleChange,
@@ -127,14 +161,6 @@ const SignUpModal = () => {
                 {errors.password}
               </Text>
             )}
-            <Pressable
-              onPress={() => navigation.navigate("ForgotPassword")}
-              mt={2}
-            >
-              <Text color="#00cc66" ml={2}>
-                Forgot Password
-              </Text>
-            </Pressable>
             <Flex
               mt={10}
               ml={2}
@@ -144,7 +170,7 @@ const SignUpModal = () => {
               w="96"
             >
               <Text fontSize="2xl" fontWeight="bold" m={2}>
-                Sign In
+                Sign Up
               </Text>
               <IconButton
                 mr={2}
@@ -160,13 +186,17 @@ const SignUpModal = () => {
       </Formik>
 
       <Flex justify="center" align="center" w="96" mt={10}>
-        <Text fontSize="md" onPress={() => navigation.navigate("SignUp")}>
-          Sign Up Instead
-        </Text>
+        <Text fontSize="md">Sign Up with</Text>
         <IconButton
-          onPress={handleGLogin}
+          onPress={handleGRegister}
           icon={<Ionicons name="logo-google" size={30} color="#00cc66" />}
         />
+        <Text fontSize="md">
+          Already have account?{" "}
+          <Text color="#00cc66" onPress={() => navigation.goBack()}>
+            Sign In
+          </Text>
+        </Text>
       </Flex>
     </Container>
   );

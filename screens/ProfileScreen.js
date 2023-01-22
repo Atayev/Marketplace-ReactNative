@@ -1,14 +1,26 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import SignIn from "../components/SignIn";
+import auth from "@react-native-firebase/auth";
 const ProfileScreen = () => {
-  const [isAuth, setIsAuth] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState();
 
-  if (!isAuth) {
+  const onAuthStateChanged = (user) => {
+    setUser(user);
+    if (isLoading) setIsLoading(false);
+  };
+
+  useEffect(() => {
+    const subscriber = auth().onAuthStateChanged(onAuthStateChanged);
+    return subscriber;
+  }, []);
+
+  if (isLoading) return null;
+
+  if (!user) {
     return <SignIn />;
   }
-  return (
-    <View></View>
-  );
+  return <View>{user.email}</View>;
 };
 
 export default ProfileScreen;

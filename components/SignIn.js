@@ -1,11 +1,9 @@
 import React, { useState } from "react";
 import {
-  Box,
   Container,
   Heading,
   Text,
   Input,
-  FormControl,
   Stack,
   Pressable,
   IconButton,
@@ -21,6 +19,25 @@ const SignIn = () => {
 
   //Google authetification
   const handleGLogin = () => {};
+  const handleLogin = async (values) => {
+    // const auth = getAuth();
+    // const { email, password } = values;
+    // console.log(email,password)
+    // try {
+    //   const userCredential = await signInWithEmailAndPassword(
+    //     auth,
+    //     email,
+    //     password
+    //   );
+    //   if (userCredential.user) {
+    //     return navigation.navigate("Explore");
+    //   } else {
+    //     console.log("nosuch user");
+    //   }
+    // } catch (err) {
+    //   console.log(err, "something went wrong");
+    // }
+  };
   return (
     <Container padding={4} w="full">
       <Heading paddingTop={10}>
@@ -31,7 +48,7 @@ const SignIn = () => {
       <Formik
         validationSchema={loginValidationSchema}
         initialValues={{ email: "", password: "" }}
-        onSubmit={(values) => console.log(values)}
+        onSubmit={(values) => handleLogin(values)}
       >
         {({
           handleChange,
@@ -125,11 +142,10 @@ const SignIn = () => {
               </Text>
               <IconButton
                 mr={2}
-                bg={!isValid ? "gray.400" : "#00cc66"}
+                bg={"#00cc66"}
                 borderRadius={50}
                 onPress={handleSubmit}
                 icon={<Ionicons name="chevron-forward" size={23} />}
-                disabled={!isValid}
               />
             </Flex>
           </Stack>
@@ -137,13 +153,17 @@ const SignIn = () => {
       </Formik>
 
       <Flex justify="center" align="center" w="96" mt={10}>
-        <Text fontSize="md" onPress={() => navigation.navigate("SignUp")}>
-          Sign Up Instead
-        </Text>
+        <Text fontSize="md">Sign In With</Text>
         <IconButton
           onPress={handleGLogin}
           icon={<Ionicons name="logo-google" size={30} color="#00cc66" />}
         />
+        <Text fontSize="md">
+          Do not have an account?{" "}
+          <Text color="#00cc66" onPress={() => navigation.navigate("SignUp")}>
+            Sign up
+          </Text>
+        </Text>
       </Flex>
     </Container>
   );

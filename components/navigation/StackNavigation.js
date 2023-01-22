@@ -45,7 +45,7 @@ export const ProfileStackScreen = () => {
       <ProfileStack.Screen
         name="SignUp"
         component={SignUpModal}
-        options={{ presentation:'formSheet', title:'Sign Up'}}
+        options={{ presentation:'formSheet', headerShown:false}}
 
       />
     </ProfileStack.Navigator>
