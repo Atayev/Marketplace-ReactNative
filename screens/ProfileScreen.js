@@ -1,12 +1,13 @@
-import React from "react";
-import { Container, Heading, Text } from "native-base";
+import React, { useState } from "react";
+import SignIn from "../components/SignIn";
 const ProfileScreen = () => {
+  const [isAuth, setIsAuth] = useState(false);
+
+  if (!isAuth) {
+    return <SignIn />;
+  }
   return (
-    <Container padding={7}>
-      <Heading>
-       <Text>Welcome Back!</Text>
-      </Heading>
-    </Container>
+    <View></View>
   );
 };
 
