@@ -1,33 +1,34 @@
 {
   "project_info": {
-    "project_number": "353110305601",
-    "project_id": "marketplace-54db8",
-    "storage_bucket": "marketplace-54db8.appspot.com"
+    "project_number": "909261236411",
+    "firebase_url": "https://house-marketplace-app-ce491-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "house-marketplace-app-ce491",
+    "storage_bucket": "house-marketplace-app-ce491.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:353110305601:android:72672dc66bd5ee9519cfc0",
+        "mobilesdk_app_id": "1:909261236411:android:4bcfc87c235624a95f619e",
         "android_client_info": {
           "package_name": "com.marketplace"
         }
       },
       "oauth_client": [
         {
-          "client_id": "353110305601-n735tv2hqk2qf4v60s38bmejdd60n608.apps.googleusercontent.com",
+          "client_id": "909261236411-u984t3amc1ttkiigj081ogp5hjhsaims.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyD_EpO2q4r8MQIYRnf99OnzKL_T5KiAW_s"
+          "current_key": "AIzaSyB7c5iagsPA4mzZcQJ0dOgP2hwysoDoJ7o"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "353110305601-n735tv2hqk2qf4v60s38bmejdd60n608.apps.googleusercontent.com",
+              "client_id": "909261236411-u984t3amc1ttkiigj081ogp5hjhsaims.apps.googleusercontent.com",
               "client_type": 3
             }
           ]
