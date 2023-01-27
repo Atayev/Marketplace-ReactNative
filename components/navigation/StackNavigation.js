@@ -7,6 +7,8 @@ import SignUpModal from "../SignUpModal";
 import SignIn from "../SignIn";
 import auth from "@react-native-firebase/auth";
 import CreateListing from "../CreateListing";
+import RentCategoryScreen from "../../screens/RentCategoryScreen";
+import SellCategoryScreen from "../../screens/SellCategoryScreen";
 const HomeStack = createNativeStackNavigator();
 
 export const HomeStackScreen = () => {
@@ -15,6 +17,16 @@ export const HomeStackScreen = () => {
       <HomeStack.Screen
         name="ExploreStack"
         component={ExploreScreen}
+        options={{ headerShown: false }}
+      />
+      <HomeStack.Screen
+        name="RentCategory"
+        component={RentCategoryScreen}
+        options={{ headerShown: false }}
+      />
+      <HomeStack.Screen
+        name="SellCategory"
+        component={SellCategoryScreen}
         options={{ headerShown: false }}
       />
     </HomeStack.Navigator>

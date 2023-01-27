@@ -54,7 +54,7 @@ const ProfileScreen = ({ navigation }) => {
   if (isLoading) return <Loading />;
   if (!user) return <SignIn />;
   return (
-    <Container padding={4} w="full">
+    <Container padding={4} w="full" bg='#f2f4f8'>
       <Heading paddingTop={10}>
         <Flex justify="space-between" direction="row" w="96">
           <Text fontSize="4xl" fontWeight="extrabold">
