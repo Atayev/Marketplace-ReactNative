@@ -12,7 +12,8 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { Formik } from "formik";
-import { loginValidationSchema } from "../utils/loginValidationSchema";
+import { loginValidationSchema } from "../utils/validationSchemas";
+import auth from "@react-native-firebase/auth";
 const SignIn = () => {
   const [show, setShow] = useState(false);
   const navigation = useNavigation();
@@ -20,24 +21,15 @@ const SignIn = () => {
   //Google authetification
   const handleGLogin = () => {};
   const handleLogin = async (values) => {
-    // const auth = getAuth();
-    // const { email, password } = values;
-    // console.log(email,password)
-    // try {
-    //   const userCredential = await signInWithEmailAndPassword(
-    //     auth,
-    //     email,
-    //     password
-    //   );
-    //   if (userCredential.user) {
-    //     return navigation.navigate("Explore");
-    //   } else {
-    //     console.log("nosuch user");
-    //   }
-    // } catch (err) {
-    //   console.log(err, "something went wrong");
-    // }
+    try {
+      const { email, password } = values;
+      await auth().signInWithEmailAndPassword(email, password);
+      navigation.navigate("Explore");
+    } catch (error) {
+      console.log("something went wrong");
+    }
   };
+
   return (
     <Container padding={4} w="full">
       <Heading paddingTop={10}>
@@ -138,14 +130,15 @@ const SignIn = () => {
               w="96"
             >
               <Text fontSize="2xl" fontWeight="bold" m={2}>
-                Sign In
+                Sign in
               </Text>
               <IconButton
                 mr={2}
-                bg={"#00cc66"}
+                bg={!isValid ? "gray.400" : "#00cc66"}
                 borderRadius={50}
                 onPress={handleSubmit}
                 icon={<Ionicons name="chevron-forward" size={23} />}
+                disabled={!isValid}
               />
             </Flex>
           </Stack>

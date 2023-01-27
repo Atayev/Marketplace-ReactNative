@@ -14,45 +14,37 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { Formik } from "formik";
-import { loginValidationSchema } from "../utils/loginValidationSchema";
+import { registerValidationSchema } from "../utils/validationSchemas";
 import auth from "@react-native-firebase/auth";
 import firestore from "@react-native-firebase/firestore";
 
 const SignUpModal = () => {
   const [show, setShow] = useState(false);
   const navigation = useNavigation();
-
   //Google register
   const handleGRegister = () => {};
   const handleRegister = async (values) => {
-    const { email, password, name } = values;
-    const userCredential = await auth()
-      .createUserWithEmailAndPassword(email, password)
-      .then(() => {
-        auth().currentUser.updateProfile({
-          displayName: name,
-        });
-        const user = userCredential.user;
-        const valuesCopy = { ...values };
-        delete valuesCopy.password;
-        valuesCopy.timestamp = firestore.Timestamp.now();
-        firestore()
-          .collection("users")
-          .doc(user.uid)
-          .set(valuesCopy)
-          .then(() => console.log("users added"));
-      })
-      .catch((error) => {
-        if (error.code === "auth/email-already-in-use") {
-          console.log("That email address is already in use!");
-        }
-
-        if (error.code === "auth/invalid-email") {
-          console.log("That email address is invalid!");
-        }
-
+    try {
+      const { email, password, name } = values;
+      const { user } = await auth().createUserWithEmailAndPassword(
+        email,
+        password
+      );
+      await user.updateProfile({ displayName: name });
+      const valuesCopy = { ...values, timestamp: firestore.Timestamp.now() };
+      delete valuesCopy.password;
+      await firestore().collection("users").doc(user.uid).set(valuesCopy);
+      navigation.navigate("SignIn");
+    } catch (error) {
+      const { code } = error;
+      if (code === "auth/email-already-in-use") {
+        console.log("That email address is already in use!");
+      } else if (code === "auth/invalid-email") {
+        console.log("That email address is invalid!");
+      } else {
         console.error(error);
-      });
+      }
+    }
   };
 
   return (
@@ -63,7 +55,7 @@ const SignUpModal = () => {
         </Text>
       </Heading>
       <Formik
-        validationSchema={loginValidationSchema}
+        validationSchema={registerValidationSchema}
         initialValues={{ name: "", email: "", password: "" }}
         onSubmit={(values) => handleRegister(values)}
       >
