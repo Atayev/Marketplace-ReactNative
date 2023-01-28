@@ -9,6 +9,7 @@ import auth from "@react-native-firebase/auth";
 import CreateListing from "../CreateListing";
 import RentCategoryScreen from "../../screens/RentCategoryScreen";
 import SellCategoryScreen from "../../screens/SellCategoryScreen";
+import HouseDetailsScreen from "../../screens/HouseDetailsScreen";
 const HomeStack = createNativeStackNavigator();
 
 export const HomeStackScreen = () => {
@@ -20,19 +21,20 @@ export const HomeStackScreen = () => {
         options={{ headerShown: false }}
       />
       <HomeStack.Screen
-        name="RentCategory"
+        name="rent"
         component={RentCategoryScreen}
         options={{ headerShown: false }}
       />
       <HomeStack.Screen
-        name="SellCategory"
+        name="sale"
         component={SellCategoryScreen}
         options={{ headerShown: false }}
       />
-      {/* <HomeStack.Screen 
-        name=""
-
-      /> */}
+      <HomeStack.Screen
+        name="HouseDetailsScreen"
+        component={HouseDetailsScreen}
+        options={{ headerShown: false }}
+      />
     </HomeStack.Navigator>
   );
 };

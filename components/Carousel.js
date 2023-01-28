@@ -1,4 +1,4 @@
-import { TouchableOpacity } from "react-native";
+import { TouchableOpacity, FlatList } from "react-native";
 import { Box, Text, Image, ScrollView } from "native-base";
 import { useNavigation } from "@react-navigation/native";
 import { useEffect, useState } from "react";
@@ -39,17 +39,13 @@ const Carousel = () => {
           <TouchableOpacity
             key={id}
             onPress={() =>
-              navigation.navigate(`${listing?.type}`, {
-                id: id,
-                name: listing.name,
-                image:listing.imgUrls[0]
-              })
+              navigation.navigate("HouseDetailsScreen", { listing })
             }
           >
             <Box borderRadius="3xl" overflow="hidden" position="relative">
               <Image
                 source={{
-                  uri: listing?.imgUrls[0],
+                  uri: listing.imgUrls[0],
                 }}
                 alt={listing?.name}
                 width="full"

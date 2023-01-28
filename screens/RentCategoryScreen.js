@@ -1,11 +1,10 @@
 import { View, Text } from "react-native";
 import React from "react";
 
-const RentCategoryScreen = ({ route }) => {
-  const { id } = route.params;
+const RentCategoryScreen = () => {
   return (
     <View>
-      <Text>RentCategoryScreen{ id }</Text>
+      <Text>RentCategoryScreen</Text>
     </View>
   );
 };
