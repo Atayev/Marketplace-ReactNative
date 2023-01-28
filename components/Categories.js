@@ -1,6 +1,5 @@
 import React from "react";
 import { Box, Flex, Image, Pressable, Text } from "native-base";
-import { TouchableOpacity } from "react-native";
 import rentCategoryImage from "../assets/rentCategoryImage.jpg";
 import sellCategoryImage from "../assets/sellCategoryImage.jpg";
 import { useNavigation } from "@react-navigation/native";
@@ -15,7 +14,7 @@ const Categories = () => {
         <Pressable
           width="1/2"
           mr="2"
-          onPress={() => navigation.navigate("RentCategory")}
+          onPress={() => navigation.navigate("rent")}
         >
           <Image
             source={rentCategoryImage}
@@ -24,6 +23,7 @@ const Categories = () => {
             minHeight={115}
             borderRadius="lg"
             m="0"
+            alt="rent"
           />
           <Text fontSize="sm" fontWeight="semibold" pt="1">
             Places for a rent
@@ -31,7 +31,7 @@ const Categories = () => {
         </Pressable>
         <Pressable
           width="1/2"
-          onPress={() => navigation.navigate("SellCategory")}
+          onPress={() => navigation.navigate("sale")}
         >
           <Image
             source={sellCategoryImage}
@@ -40,6 +40,7 @@ const Categories = () => {
             minHeight={115}
             borderRadius="lg"
             m="0"
+            alt="sell"
           />
           <Text fontSize="sm" fontWeight="semibold" pt="1">
             Places for a sell

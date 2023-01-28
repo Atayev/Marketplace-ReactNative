@@ -1,19 +1,57 @@
 import { TouchableOpacity } from "react-native";
-import React from "react";
 import { Box, Text, Image, ScrollView } from "native-base";
-const Carousel = ({ data }) => {
+import { useNavigation } from "@react-navigation/native";
+import { useEffect, useState } from "react";
+import { Loading } from "../components/Loading";
+import firestore from "@react-native-firebase/firestore";
+const Carousel = () => {
+  const navigation = useNavigation();
+  const [isLoading, setIsloading] = useState(true);
+  const [listings, setListings] = useState([]);
+  useEffect(() => {
+    const fetchListings = async () => {
+      const listings = firestore()
+        .collection("listings")
+        .onSnapshot((querySnapshot) => {
+          const listingsArr = [];
+
+          querySnapshot.forEach((docSnap) => {
+            listingsArr.push({
+              ...docSnap.data(),
+              key: docSnap.id,
+            });
+          });
+          setListings(listingsArr);
+          setIsloading(false);
+        });
+      return () => listings();
+    };
+    fetchListings();
+  }, []);
+  if (isLoading) return <Loading />;
   return (
     <ScrollView>
       <Text fontSize="xl" fontWeight="bold">
         Recomended
       </Text>
       <ScrollView horizontal mt="3" showsHorizontalScrollIndicator={false}>
-        {data.map((slider) => (
-          <TouchableOpacity key={slider.title}>
+        {listings.map((listing, id) => (
+          <TouchableOpacity
+            key={id}
+            onPress={() =>
+              navigation.navigate(`${listing?.type}`, {
+                id: id,
+                name: listing.name,
+                image:listing.imgUrls[0]
+              })
+            }
+          >
             <Box borderRadius="3xl" overflow="hidden" position="relative">
               <Image
-                source={slider.imageUrl}
-                alt={slider.title}
+                source={{
+                  uri: listing?.imgUrls[0],
+                }}
+                alt={listing?.name}
                 width="full"
                 height="80"
                 mx="2"
@@ -23,13 +61,13 @@ const Carousel = ({ data }) => {
               />
               <Box position="absolute" top="7" left="5" zIndex="50">
                 <Text
-                  fontSize="2xl"
+                  fontSize="xl"
                   bg="#000000b7"
                   color="white"
                   p="3"
                   borderRadius="lg"
                 >
-                  House Name
+                  {listing?.name}
                 </Text>
                 <Text
                   fontSize="md"
@@ -40,7 +78,8 @@ const Carousel = ({ data }) => {
                   mt="2"
                   textAlign="center"
                 >
-                  House Price
+                  ${listing?.discountedPrice ?? listing?.regularPrice}{" "}
+                  {listing?.type === "rent" && "/ month"}
                 </Text>
               </Box>
             </Box>

@@ -29,6 +29,10 @@ export const HomeStackScreen = () => {
         component={SellCategoryScreen}
         options={{ headerShown: false }}
       />
+      {/* <HomeStack.Screen 
+        name=""
+
+      /> */}
     </HomeStack.Navigator>
   );
 };

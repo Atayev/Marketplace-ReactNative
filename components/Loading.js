@@ -5,10 +5,11 @@ export const Loading = () => {
     <View
       style={{
         flex: 1,
-        margin: 5,
+        marginBottom: 1,
         flexDirection: "row",
         justifyContent: "center",
         alignItems: "center",
+        backgroundColor: "#00000080",
       }}
     >
       <ActivityIndicator size="large" color="#00cc66" />

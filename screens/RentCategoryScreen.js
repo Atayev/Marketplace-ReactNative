@@ -1,12 +1,13 @@
-import { View, Text } from 'react-native'
-import React from 'react'
+import { View, Text } from "react-native";
+import React from "react";
 
-const RentCategoryScreen = () => {
+const RentCategoryScreen = ({ route }) => {
+  const { id } = route.params;
   return (
     <View>
-      <Text>RentCategoryScreen</Text>
+      <Text>RentCategoryScreen{ id }</Text>
     </View>
-  )
-}
+  );
+};
 
-export default RentCategoryScreen
+export default RentCategoryScreen;
