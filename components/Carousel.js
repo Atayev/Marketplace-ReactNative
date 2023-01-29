@@ -6,27 +6,28 @@ import { Loading } from "../components/Loading";
 import firestore from "@react-native-firebase/firestore";
 const Carousel = () => {
   const navigation = useNavigation();
-  const [isLoading, setIsloading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [listings, setListings] = useState([]);
-  useEffect(() => {
-    const fetchListings = async () => {
-      const listings = firestore()
-        .collection("listings")
-        .onSnapshot((querySnapshot) => {
-          const listingsArr = [];
 
-          querySnapshot.forEach((docSnap) => {
-            listingsArr.push({
-              ...docSnap.data(),
-              key: docSnap.id,
-            });
+  const fetchData = async () => {
+    firestore()
+      .collection("listings")
+      .onSnapshot((querySnapshot) => {
+        const listingsArr = [];
+
+        querySnapshot.forEach((docSnap) => {
+          listingsArr.push({
+            ...docSnap.data(),
+            key: docSnap.id,
           });
-          setListings(listingsArr);
-          setIsloading(false);
         });
-      return () => listings();
-    };
-    fetchListings();
+        setListings(listingsArr);
+        setIsLoading(false);
+      });
+  };
+
+  useEffect(() => {
+    fetchData();
   }, []);
   if (isLoading) return <Loading />;
   return (

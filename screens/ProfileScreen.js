@@ -9,6 +9,7 @@ import {
   Flex,
   Input,
   Stack,
+  Box,
 } from "native-base";
 import { Loading } from "../components/Loading";
 import { Ionicons } from "@expo/vector-icons";
@@ -54,7 +55,7 @@ const ProfileScreen = ({ navigation }) => {
   if (isLoading) return <Loading />;
   if (!user) return <SignIn />;
   return (
-    <Container padding={4} w="full" bg='#f2f4f8'>
+    <Box p={2} w="full" bg="#f2f4f8">
       <Heading paddingTop={10}>
         <Flex justify="space-between" direction="row" w="96">
           <Text fontSize="4xl" fontWeight="extrabold">
@@ -146,7 +147,7 @@ const ProfileScreen = ({ navigation }) => {
           Sell or Rent your Home/Apart/House
         </Text>
       </Button>
-    </Container>
+    </Box>
   );
 };
 

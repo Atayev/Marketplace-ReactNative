@@ -26,13 +26,10 @@ const Categories = () => {
             alt="rent"
           />
           <Text fontSize="sm" fontWeight="semibold" pt="1">
-            Places for a rent
+            Places for rent
           </Text>
         </Pressable>
-        <Pressable
-          width="1/2"
-          onPress={() => navigation.navigate("sale")}
-        >
+        <Pressable width="1/2" onPress={() => navigation.navigate("sale")}>
           <Image
             source={sellCategoryImage}
             width="full"
@@ -43,7 +40,7 @@ const Categories = () => {
             alt="sell"
           />
           <Text fontSize="sm" fontWeight="semibold" pt="1">
-            Places for a sell
+            Places for sale
           </Text>
         </Pressable>
       </Flex>
