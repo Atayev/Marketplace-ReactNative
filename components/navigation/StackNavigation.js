@@ -6,10 +6,10 @@ import ProfileScreen from "../../screens/ProfileScreen";
 import SignUpModal from "../SignUpModal";
 import SignIn from "../SignIn";
 import auth from "@react-native-firebase/auth";
-import CreateListing from "../CreateListing";
 import RentCategoryScreen from "../../screens/RentCategoryScreen";
 import SellCategoryScreen from "../../screens/SellCategoryScreen";
 import HouseDetailsScreen from "../../screens/HouseDetailsScreen";
+import CreateListingScreen from "../../screens/CreateListingScreen";
 const HomeStack = createNativeStackNavigator();
 
 export const HomeStackScreen = () => {
@@ -76,7 +76,7 @@ export const ProfileStackScreen = () => {
       />
       <ProfileStack.Screen
         name="CreateaListing"
-        component={CreateListing}
+        component={CreateListingScreen}
         options={{ presentation: "formSheet", headerShown: false }}
       />
     </ProfileStack.Navigator>
