@@ -20,6 +20,7 @@ import firestore from "@react-native-firebase/firestore";
 const CreateListingScreen = () => {
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [geoLocation, setGeoLocation] = useState(true);
   const [formData, setFormData] = useState({
     type: "rent",
     name: "",
@@ -51,65 +52,87 @@ const CreateListingScreen = () => {
     if (values.discountedPrice > values.regularPrice) {
       setLoading(false);
       alert("discounted price cant be greater than regular");
+      return;
     }
     if (values.images.length > 6) {
       setLoading(false);
       alert("Max 6 photos allowed");
+      return;
     }
 
-    //storage image upload
+    if (geoLocation) {
+      try {
+        const response = await fetch(
+          `https://maps.googleapis.com/maps/api/geocode/json?address=${values.address}&key=${process.env.GOOGLE_API_KEY}`
+        );
+        const data = response.data;
+        if (data.status !== "OK") {
+          throw new Error(data.status);
+        }
+        const result = data.results[0];
+        const lat = result.geometry.location.lat;
+        const lng = result.geometry.location.lng;
+        return { lat, lng };
+      } catch (error) {}
+    }
 
+    // Check if user is signed in
+    const user = auth().currentUser;
+    if (!user) {
+      setLoading(false);
+      alert("User is not signed in");
+      return;
+    }
+
+    // Store image in Firebase Storage
     const storeImage = async (image) => {
-      return new Promise((resolve, reject) => {
-        const fileName = `${auth().currentUser.uid}-${image.name}`;
-        const storageRef = storage().ref("images/", fileName);
+      const fileName = `${user.uid}-${image.name}`;
+      const storageRef = storage().ref("images/").child(fileName);
 
+      try {
         const upload = storageRef.putFile(image);
         upload.on("state_changed", (taskSnap) => {
           console.log(
             `${taskSnap.bytesTransferred} transferred out of ${taskSnap.totalBytes}`
           );
         });
-        upload.then(() => {
-          console.log("image Uploaded");
-        }),
-          (error) => {
-            reject(error);
-          },
-          () => {
-            storage()
-              .ref(upload.snapshot.ref)
-              .getDownloadURL()
-              .then((downloadUrl) => {
-                console.log(downloadUrl);
-                resolve(downloadUrl);
-              });
-          };
-      });
+        await upload;
+        console.log("image Uploaded");
+        const downloadUrl = await storageRef.getDownloadURL();
+        console.log(downloadUrl);
+        return downloadUrl;
+      } catch (error) {
+        console.error(error);
+        throw error;
+      }
     };
-    const imgUrls = await Promise.all(
-      values.images.map((image) => storeImage(image))
-    ).catch(() => {
+
+    try {
+      const imgUrls = await Promise.all(
+        values.images.map(async (image) => {
+          try {
+            return await storeImage(image);
+          } catch (error) {
+            console.error(error);
+          }
+        })
+      );
+
+      const formDataCopy = {
+        ...values,
+        imgUrls,
+        timestamp: firestore.Timestamp.now(),
+      };
+
+      delete formDataCopy.images;
+      !formDataCopy.offer && delete formDataCopy.discountedPrice;
+      await firestore().collection("listings").doc(user.uid).set(formDataCopy);
+      console.log(formDataCopy);
+    } catch (error) {
       setLoading(false);
       alert("something went wrong");
-      return;
-    });
-
-    const formDataCopy = {
-      ...values,
-      imgUrls,
-      timestamp: firestore.Timestamp.now(),
-    };
-
-    delete formDataCopy.images;
-    !formDataCopy.offer && delete formDataCopy.discountedPrice;
-    const docRef = await firestore()
-      .collection("listings")
-      .doc(auth().currentUser.uid)
-      .set(formDataCopy);
-    console.log(formDataCopy);
-
-    navigation.navigate("HomeDetailsScreen", { id: docRef.id, ...docRef });
+      console.error(error);
+    }
   };
 
   if (loading) <Loading />;
