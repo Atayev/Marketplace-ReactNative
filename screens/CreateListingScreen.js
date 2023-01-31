@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Container,
@@ -8,12 +8,18 @@ import {
   Flex,
   Input,
   ScrollView,
+  Image,
 } from "native-base";
 import { launchImageLibrary } from "react-native-image-picker";
 import { Button, TouchableOpacity } from "react-native";
 import { Formik } from "formik";
+import { Loading } from "../components/Loading";
+import storage from "@react-native-firebase/storage";
+import auth from "@react-native-firebase/auth";
+import firestore from "@react-native-firebase/firestore";
 const CreateListingScreen = () => {
   const [images, setImages] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     type: "rent",
     name: "",
@@ -25,19 +31,89 @@ const CreateListingScreen = () => {
     offer: false,
     regularPrice: 0,
     discountedPrice: 0,
-    images: {},
+    images: [],
     latitude: 0,
     longitude: 0,
   });
 
   const selectImages = async () => {
+    setLoading(true);
     const result = await launchImageLibrary({
       selectionLimit: 6,
       quality: 1,
       mediaType: "photo",
     });
-    setImages([...images, result.assets.map((image) => image.uri)]);
+    setLoading(false);
+    return result.assets.map((image) => image.uri);
   };
+
+  const handleUpload = async (values) => {
+    if (values.discountedPrice > values.regularPrice) {
+      setLoading(false);
+      alert("discounted price cant be greater than regular");
+    }
+    if (values.images.length > 6) {
+      setLoading(false);
+      alert("Max 6 photos allowed");
+    }
+
+    //storage image upload
+
+    const storeImage = async (image) => {
+      return new Promise((resolve, reject) => {
+        const fileName = `${auth().currentUser.uid}-${image.name}`;
+        const storageRef = storage().ref("images/", fileName);
+
+        const upload = storageRef.putFile(image);
+        upload.on("state_changed", (taskSnap) => {
+          console.log(
+            `${taskSnap.bytesTransferred} transferred out of ${taskSnap.totalBytes}`
+          );
+        });
+        upload.then(() => {
+          console.log("image Uploaded");
+        }),
+          (error) => {
+            reject(error);
+          },
+          () => {
+            storage()
+              .ref(upload.snapshot.ref)
+              .getDownloadURL()
+              .then((downloadUrl) => {
+                console.log(downloadUrl);
+                resolve(downloadUrl);
+              });
+          };
+      });
+    };
+    const imgUrls = await Promise.all(
+      values.images.map((image) => storeImage(image))
+    ).catch(() => {
+      setLoading(false);
+      alert("something went wrong");
+      return;
+    });
+
+    const formDataCopy = {
+      ...values,
+      imgUrls,
+      timestamp: firestore.Timestamp.now(),
+    };
+
+    delete formDataCopy.images;
+    !formDataCopy.offer && delete formDataCopy.discountedPrice;
+    const docRef = await firestore()
+      .collection("listings")
+      .doc(auth().currentUser.uid)
+      .set(formDataCopy);
+    console.log(formDataCopy);
+
+    navigation.navigate("HomeDetailsScreen", { id: docRef.id, ...docRef });
+  };
+
+  if (loading) <Loading />;
+  // console.log("this is formdata", formData);
   return (
     <ScrollView p="2" w="full" h="full" bg="#f2f4f8">
       <Heading paddingTop={10}>
@@ -47,13 +123,7 @@ const CreateListingScreen = () => {
       </Heading>
       <Formik
         initialValues={formData}
-        onSubmit={(values, { setSubmitting }) => {
-          setTimeout(() => {
-            console.log("values: ", values);
-            setFormData(values);
-            setSubmitting(false);
-          }, 400);
-        }}
+        onSubmit={(values) => handleUpload(values)}
       >
         {({
           handleChange,
@@ -341,8 +411,65 @@ const CreateListingScreen = () => {
               <Text fontSize="sm" mt="1" fontWeight="bold">
                 The first image will be the cover (max 6).
               </Text>
-              <TouchableOpacity onPress={selectImages}  activeOpacity={values.images}>
-                <Text fontSize='sm' textAlign='center' p='2' shadow='5' fontWeight='bold' mt='1' bg='#00cc66' borderRadius='lg' color='white'>Select Images</Text>
+              <TouchableOpacity
+                onPress={async () => {
+                  const updatedimages = await selectImages();
+                  handleChange({
+                    target: {
+                      name: "images",
+                      value: updatedimages,
+                    },
+                  });
+                }}
+                activeOpacity={values.images}
+              >
+                <Text
+                  fontSize="sm"
+                  textAlign="center"
+                  p="2"
+                  shadow="5"
+                  fontWeight="bold"
+                  mt="1"
+                  bg="#00cc66"
+                  borderRadius="lg"
+                  color="white"
+                >
+                  Select Images
+                </Text>
+              </TouchableOpacity>
+
+              {values.images && (
+                <Flex direction="row" mt="1">
+                  {values.images.map((image, index) => (
+                    <Image
+                      key={index}
+                      source={{
+                        uri: image,
+                      }}
+                      w="70"
+                      h="70"
+                      alt="ff"
+                      mx="2"
+                      borderRadius="3xl"
+                      shadow="9"
+                    />
+                  ))}
+                </Flex>
+              )}
+              <TouchableOpacity onPress={handleSubmit}>
+                <Text
+                  fontSize="xl"
+                  textAlign="center"
+                  p="2"
+                  shadow="5"
+                  fontWeight="bold"
+                  mt="10"
+                  bg="#00cc66"
+                  borderRadius="lg"
+                  color="white"
+                >
+                  Create a listing
+                </Text>
               </TouchableOpacity>
             </Box>
           </Stack>
