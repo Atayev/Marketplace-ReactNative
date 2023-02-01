@@ -18,7 +18,6 @@ import storage from "@react-native-firebase/storage";
 import auth from "@react-native-firebase/auth";
 import firestore from "@react-native-firebase/firestore";
 const CreateListingScreen = () => {
-  const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [geoLocation, setGeoLocation] = useState(true);
   const [formData, setFormData] = useState({
@@ -33,8 +32,7 @@ const CreateListingScreen = () => {
     regularPrice: 0,
     discountedPrice: 0,
     images: [],
-    latitude: 0,
-    longitude: 0,
+    geoLocation: { lat, lng },
   });
 
   const selectImages = async () => {
@@ -49,6 +47,7 @@ const CreateListingScreen = () => {
   };
 
   const handleUpload = async (values) => {
+    let formDataCopy = {};
     if (values.discountedPrice > values.regularPrice) {
       setLoading(false);
       alert("discounted price cant be greater than regular");
@@ -60,20 +59,29 @@ const CreateListingScreen = () => {
       return;
     }
 
-    if (geoLocation) {
+    if (geoLocation && values.address != null) {
       try {
         const response = await fetch(
-          `https://maps.googleapis.com/maps/api/geocode/json?address=${values.address}&key=${process.env.GOOGLE_API_KEY}`
+          `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
+            values.address
+          )}&key=${process.env.GOOGLE_API_KEY}`
         );
         const data = response.data;
         if (data.status !== "OK") {
           throw new Error(data.status);
         }
         const result = data.results[0];
-        const lat = result.geometry.location.lat;
-        const lng = result.geometry.location.lng;
-        return { lat, lng };
-      } catch (error) {}
+        console.log(result);
+
+        setFormData({
+          geoLocation: {
+            lat: result.geometry.location.lat,
+            lng: result.geometry.location.lng,
+          },
+        });
+      } catch (error) {
+        console.log("something went wrong geo");
+      }
     }
 
     // Check if user is signed in
@@ -83,6 +91,7 @@ const CreateListingScreen = () => {
       alert("User is not signed in");
       return;
     }
+    console.log(user);
 
     // Store image in Firebase Storage
     const storeImage = async (image) => {
@@ -118,7 +127,7 @@ const CreateListingScreen = () => {
         })
       );
 
-      const formDataCopy = {
+      formDataCopy = {
         ...values,
         imgUrls,
         timestamp: firestore.Timestamp.now(),
@@ -126,8 +135,8 @@ const CreateListingScreen = () => {
 
       delete formDataCopy.images;
       !formDataCopy.offer && delete formDataCopy.discountedPrice;
-      await firestore().collection("listings").doc(user.uid).set(formDataCopy);
       console.log(formDataCopy);
+      await firestore().collection("listings").add(formDataCopy);
     } catch (error) {
       setLoading(false);
       alert("something went wrong");
@@ -136,7 +145,6 @@ const CreateListingScreen = () => {
   };
 
   if (loading) <Loading />;
-  // console.log("this is formdata", formData);
   return (
     <ScrollView p="2" w="full" h="full" bg="#f2f4f8">
       <Heading paddingTop={10}>
@@ -148,14 +156,7 @@ const CreateListingScreen = () => {
         initialValues={formData}
         onSubmit={(values) => handleUpload(values)}
       >
-        {({
-          handleChange,
-          handleBlur,
-          handleSubmit,
-          values,
-          errors,
-          isValid,
-        }) => (
+        {({ handleChange, handleSubmit, values, errors, isValid }) => (
           <Stack marginX="2">
             <Text fontSize="xl" mt="5" fontWeight="bold">
               Sell / Rent

@@ -44,7 +44,7 @@ const HouseDetailsScreen = ({ route }) => {
       </ScrollView>
       <Flex mt="1">
         <Text fontSize="3xl" fontWeight="extrabold">
-          {name} - {offer ? discountedPrice + "$/month" : regularPrice}
+          {name} - {offer ? discountedPrice + "$/month" : regularPrice}$
         </Text>
         <Text fontSize="xl" fontWeight="semibold">
           {location}
@@ -96,7 +96,7 @@ const HouseDetailsScreen = ({ route }) => {
         {/* map  */}
       </Flex>
           <Box width='full' height='1/4'>
-          <Map longitude={listing.geolocation.lng} latitude={listing.geolocation.lat} />
+          {/* <Map longitude={listing?.geolocation.lng} latitude={listing?.geolocation.lat} /> */}
           </Box>
     </Box>
   );

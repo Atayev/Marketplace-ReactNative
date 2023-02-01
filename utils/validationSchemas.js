@@ -24,3 +24,10 @@ export const loginValidationSchema = yup.object().shape({
     .min(8, ({ min }) => `Password must be at least ${min} characters`)
     .required("Password is required"),
 });
+
+export const listingValidationSchema = yup.object().shape({
+  name: yup
+    .string()
+    .required("Please make sure you correctly entered the name")
+    .min(6, ({ min }) => `Name must be at leasy ${min} characters`),
+});
