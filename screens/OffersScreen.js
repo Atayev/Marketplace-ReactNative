@@ -21,7 +21,6 @@ const OffersScreen = () => {
     };
     fetchListings();
   }, []);
-
   if (isLoading) return <Loading />;
   return (
     <Box p="2" w="full" bg="#f2f4f8">

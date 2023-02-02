@@ -30,7 +30,7 @@ const OfferItem = ({ listing }) => {
       </Box>
       <Box width="40">
         <Text fontSize="sm" fontWeight="bold" color="gray.500">
-          {listing.location}
+          {listing.location ? listing.location : listing.address}
         </Text>
         <Text fontSize="md" fontWeight="bold">
           {listing.name}

@@ -3,7 +3,10 @@ import { Container, Box, Text, ScrollView, Image, Flex } from "native-base";
 import Map from "../components/Map";
 const HouseDetailsScreen = ({ route }) => {
   const { listing } = route.params;
+  console.log("this is", listing.geolocation.lat, listing.geolocation.lng);
+
   const {
+    address,
     bedrooms,
     bathrooms,
     discountedPrice,
@@ -20,11 +23,12 @@ const HouseDetailsScreen = ({ route }) => {
     parking,
     type,
     userRef,
-    } = listing;
+  } = listing;
+  console.log(listing)
   return (
-    <Box p="2" w="full" height='full' bg="#f2f4f8">
+    <Box p="2" w="full" height="full" bg="#f2f4f8">
       <ScrollView horizontal mt="1" showsHorizontalScrollIndicator={false}>
-        {listing.imgUrls.map((item) => (
+        {imgUrls.map((item) => (
           <Box key={item}>
             <Image
               source={{
@@ -35,8 +39,8 @@ const HouseDetailsScreen = ({ route }) => {
               mx="1"
               style={{
                 aspectRatio: 1,
-                  borderRadius: 20,
-                height:320
+                borderRadius: 20,
+                height: 320,
               }}
             />
           </Box>
@@ -44,12 +48,12 @@ const HouseDetailsScreen = ({ route }) => {
       </ScrollView>
       <Flex mt="1">
         <Text fontSize="3xl" fontWeight="extrabold">
-          {name} - {offer ? discountedPrice + "$/month" : regularPrice}$
+          {name} - {offer ? discountedPrice + "$/month" : regularPrice + "$"}
         </Text>
         <Text fontSize="xl" fontWeight="semibold">
-          {location}
+          {location ? location : address}
         </Text>
-        <Flex direction="row" pt='1'>
+        <Flex direction="row" pt="1">
           <Text
             fontSize="lg"
             fontWeight="semibold"
@@ -83,7 +87,7 @@ const HouseDetailsScreen = ({ route }) => {
             </Text>
           )}
         </Flex>
-        <Box >
+        <Box mb="3" ml="3">
           <Text color="gray.500">
             {bedrooms > 1 ? `${bedrooms} Bedrooms` : "1 Bedroom"}
           </Text>
@@ -95,9 +99,12 @@ const HouseDetailsScreen = ({ route }) => {
         </Box>
         {/* map  */}
       </Flex>
-          <Box width='full' height='1/4'>
-          {/* <Map longitude={listing?.geolocation.lng} latitude={listing?.geolocation.lat} /> */}
-          </Box>
+      <Box width="full" height="1/4">
+        <Map
+          longitude={listing.geolocation.lng}
+          latitude={listing.geolocation.lat}
+        />
+      </Box>
     </Box>
   );
 };

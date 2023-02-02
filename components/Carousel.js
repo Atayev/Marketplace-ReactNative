@@ -25,7 +25,7 @@ const Carousel = () => {
         setIsLoading(false);
       });
   };
-
+  console.log(listings)
   useEffect(() => {
     fetchData();
   }, []);

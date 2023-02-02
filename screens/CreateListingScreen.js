@@ -32,7 +32,7 @@ const CreateListingScreen = () => {
     regularPrice: 0,
     discountedPrice: 0,
     images: [],
-    geoLocation: { lat, lng },
+    geolocation: { lat: null, lng: null },
   });
 
   const selectImages = async () => {
@@ -47,8 +47,9 @@ const CreateListingScreen = () => {
   };
 
   const handleUpload = async (values) => {
+    console.log(values);
     let formDataCopy = {};
-    if (values.discountedPrice > values.regularPrice) {
+    if (Number(values.discountedPrice) > Number(values.regularPrice)) {
       setLoading(false);
       alert("discounted price cant be greater than regular");
       return;
@@ -62,28 +63,25 @@ const CreateListingScreen = () => {
     if (geoLocation && values.address != null) {
       try {
         const response = await fetch(
-          `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
-            values.address
-          )}&key=${process.env.GOOGLE_API_KEY}`
+          `https://maps.googleapis.com/maps/api/geocode/json?address=${values.address}&key=${proces.env.GOOGLE_API_KEY}`
         );
-        const data = response.data;
+        const data = await response.json();
         if (data.status !== "OK") {
           throw new Error(data.status);
         }
         const result = data.results[0];
-        console.log(result);
+        console.log(
+          "this is result " + result.geometry.location.lat,
+          result.geometry.location.lng
+        );
+        const lati = result.geometry.location.lat;
+        const longi = result.geometry.location.lng;
 
-        setFormData({
-          geoLocation: {
-            lat: result.geometry.location.lat,
-            lng: result.geometry.location.lng,
-          },
-        });
+        (formData.geolocation.lat = lati), (formData.geolocation.lng = longi);
       } catch (error) {
         console.log("something went wrong geo");
       }
     }
-
     // Check if user is signed in
     const user = auth().currentUser;
     if (!user) {
@@ -91,7 +89,6 @@ const CreateListingScreen = () => {
       alert("User is not signed in");
       return;
     }
-    console.log(user);
 
     // Store image in Firebase Storage
     const storeImage = async (image) => {
@@ -115,7 +112,6 @@ const CreateListingScreen = () => {
         throw error;
       }
     };
-
     try {
       const imgUrls = await Promise.all(
         values.images.map(async (image) => {
@@ -126,16 +122,17 @@ const CreateListingScreen = () => {
           }
         })
       );
-
+      console.log(imgUrls);
       formDataCopy = {
         ...values,
         imgUrls,
+        geolocation: formData.geolocation,
         timestamp: firestore.Timestamp.now(),
       };
 
       delete formDataCopy.images;
       !formDataCopy.offer && delete formDataCopy.discountedPrice;
-      console.log(formDataCopy);
+      console.log("this is", formDataCopy);
       await firestore().collection("listings").add(formDataCopy);
     } catch (error) {
       setLoading(false);
