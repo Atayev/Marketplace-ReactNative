@@ -136,13 +136,15 @@ const ProfileScreen = ({ navigation }) => {
         borderRadius="2xl"
         mt="10"
         p="3"
+        onPress={() => navigation.navigate("CreateaListing")}
+        
       >
         <Text
           color="black"
           fontWeight="bold"
           fontSize="md"
           pt="1"
-          onPress={() => navigation.navigate("CreateaListing")}
+         
         >
           Sell or Rent your Home/Apart/House
         </Text>

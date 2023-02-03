@@ -1,6 +1,7 @@
 import React from "react";
 import { Container, Box, Text, ScrollView, Image, Flex } from "native-base";
 import Map from "../components/Map";
+import { TouchableOpacity } from "react-native";
 const HouseDetailsScreen = ({ route }) => {
   const { listing } = route.params;
   console.log("this is", listing.geolocation.lat, listing.geolocation.lng);
@@ -24,12 +25,12 @@ const HouseDetailsScreen = ({ route }) => {
     type,
     userRef,
   } = listing;
-  console.log(listing)
+  console.log(listing);
   return (
     <Box p="2" w="full" height="full" bg="#f2f4f8">
       <ScrollView horizontal mt="1" showsHorizontalScrollIndicator={false}>
-        {imgUrls.map((item) => (
-          <Box key={item}>
+        {imgUrls.map((item, i) => (
+          <Box key={item + i}>
             <Image
               source={{
                 uri: item,
@@ -46,14 +47,14 @@ const HouseDetailsScreen = ({ route }) => {
           </Box>
         ))}
       </ScrollView>
-      <Flex mt="1">
-        <Text fontSize="3xl" fontWeight="extrabold">
-          {name} - {offer ? discountedPrice + "$/month" : regularPrice + "$"}
+      <Flex mt="0">
+        <Text fontSize="2xl" fontWeight="extrabold">
+          {name} - {offer ? discountedPrice : regularPrice}$
         </Text>
         <Text fontSize="xl" fontWeight="semibold">
           {location ? location : address}
         </Text>
-        <Flex direction="row" pt="1">
+        <Flex direction="row" pt="0">
           <Text
             fontSize="lg"
             fontWeight="semibold"
@@ -87,7 +88,7 @@ const HouseDetailsScreen = ({ route }) => {
             </Text>
           )}
         </Flex>
-        <Box mb="3" ml="3">
+        <Box mb="1" ml="3">
           <Text color="gray.500">
             {bedrooms > 1 ? `${bedrooms} Bedrooms` : "1 Bedroom"}
           </Text>
@@ -105,6 +106,21 @@ const HouseDetailsScreen = ({ route }) => {
           latitude={listing.geolocation.lat}
         />
       </Box>
+      <TouchableOpacity>
+        <Text
+          fontSize="lg"
+          textAlign="center"
+          p="2"
+          shadow="5"
+          fontWeight="bold"
+          mt="2"
+          bg="#00cc66"
+          borderRadius="lg"
+          color="white"
+        >
+          Contact Landlord
+        </Text>
+      </TouchableOpacity>
     </Box>
   );
 };

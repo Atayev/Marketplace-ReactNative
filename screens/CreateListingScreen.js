@@ -6,10 +6,10 @@ import {
   Text,
   Stack,
   Flex,
-  Input,
   ScrollView,
   Image,
 } from "native-base";
+import Input from "../components/Input";
 import { launchImageLibrary } from "react-native-image-picker";
 import { Button, TouchableOpacity } from "react-native";
 import { Formik } from "formik";
@@ -17,7 +17,9 @@ import { Loading } from "../components/Loading";
 import storage from "@react-native-firebase/storage";
 import auth from "@react-native-firebase/auth";
 import firestore from "@react-native-firebase/firestore";
-const CreateListingScreen = () => {
+import Toggler from "../components/Toggler";
+import SelectImageButton from "../components/SelectImageButton";
+const CreateListingScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(false);
   const [geoLocation, setGeoLocation] = useState(true);
   const [formData, setFormData] = useState({
@@ -43,11 +45,12 @@ const CreateListingScreen = () => {
       mediaType: "photo",
     });
     setLoading(false);
-    return result.assets.map((image) => image.uri);
+    const resultArr = result.assets.map((image) => image.uri);
+    return resultArr;
   };
 
   const handleUpload = async (values) => {
-    console.log(values);
+    setLoading(true);
     let formDataCopy = {};
     if (Number(values.discountedPrice) > Number(values.regularPrice)) {
       setLoading(false);
@@ -63,21 +66,16 @@ const CreateListingScreen = () => {
     if (geoLocation && values.address != null) {
       try {
         const response = await fetch(
-          `https://maps.googleapis.com/maps/api/geocode/json?address=${values.address}&key=${proces.env.GOOGLE_API_KEY}`
+          `https://maps.googleapis.com/maps/api/geocode/json?address=${values.address}&key=${process.env.GMAPI_KEY}`
         );
         const data = await response.json();
         if (data.status !== "OK") {
           throw new Error(data.status);
         }
         const result = data.results[0];
-        console.log(
-          "this is result " + result.geometry.location.lat,
-          result.geometry.location.lng
-        );
-        const lati = result.geometry.location.lat;
-        const longi = result.geometry.location.lng;
 
-        (formData.geolocation.lat = lati), (formData.geolocation.lng = longi);
+        formData.geolocation.lat = result.geometry.location.lat;
+        formData.geolocation.lng = result.geometry.location.lng;
       } catch (error) {
         console.log("something went wrong geo");
       }
@@ -89,10 +87,9 @@ const CreateListingScreen = () => {
       alert("User is not signed in");
       return;
     }
-
     // Store image in Firebase Storage
     const storeImage = async (image) => {
-      const fileName = `${user.uid}-${image.name}`;
+      const fileName = `${user.uid}-${image}`;
       const storageRef = storage().ref("images/").child(fileName);
 
       try {
@@ -105,13 +102,13 @@ const CreateListingScreen = () => {
         await upload;
         console.log("image Uploaded");
         const downloadUrl = await storageRef.getDownloadURL();
-        console.log(downloadUrl);
         return downloadUrl;
       } catch (error) {
         console.error(error);
         throw error;
       }
     };
+
     try {
       const imgUrls = await Promise.all(
         values.images.map(async (image) => {
@@ -122,7 +119,6 @@ const CreateListingScreen = () => {
           }
         })
       );
-      console.log(imgUrls);
       formDataCopy = {
         ...values,
         imgUrls,
@@ -132,8 +128,10 @@ const CreateListingScreen = () => {
 
       delete formDataCopy.images;
       !formDataCopy.offer && delete formDataCopy.discountedPrice;
-      console.log("this is", formDataCopy);
       await firestore().collection("listings").add(formDataCopy);
+      const listing = { ...formDataCopy };
+      navigation.navigate("HouseDetailsScreen", { listing });
+      setLoading(false);
     } catch (error) {
       setLoading(false);
       alert("something went wrong");
@@ -206,32 +204,40 @@ const CreateListingScreen = () => {
             </Text>
             <Input
               value={values.name}
-              onChangeText={handleChange("name")}
-              bg="white"
-              borderRadius={15}
-              width="sm"
+              onChange={handleChange}
+              name="name"
+              w="sm"
             />
-            <Flex direction="row">
-              <Box mr="5">
+            <Text fontSize="xl" mt="5" fontWeight="bold">
+              Address
+            </Text>
+            <Input
+              value={values.address}
+              onChange={handleChange}
+              name="address"
+              w="sm"
+            />
+            <Flex direction="row" w="full">
+              <Box mr="5" w="1/3">
                 <Text fontSize="xl" mt="5" fontWeight="bold">
                   Bedrooms
                 </Text>
                 <Input
                   value={values.bedrooms}
-                  onChangeText={handleChange("bedrooms")}
-                  bg="white"
-                  borderRadius={15}
+                  onChange={handleChange}
+                  name="bedrooms"
+                  w="full"
                 />
               </Box>
-              <Box>
+              <Box w="1/3">
                 <Text fontSize="xl" mt="5" fontWeight="bold">
                   Bathrooms
                 </Text>
                 <Input
                   value={values.bathrooms}
-                  onChangeText={handleChange("bathrooms")}
-                  bg="white"
-                  borderRadius={15}
+                  onChange={handleChange}
+                  name="bathrooms"
+                  w="full"
                 />
               </Box>
             </Flex>
@@ -239,152 +245,32 @@ const CreateListingScreen = () => {
               <Text fontSize="xl" mt="5" fontWeight="bold">
                 Parking spot
               </Text>
-              <Flex direction="row">
-                <TouchableOpacity
-                  style={{
-                    backgroundColor: values.parking ? "#00cc66" : "white",
-                    padding: 20,
-                    borderRadius: 15,
-                  }}
-                  activeOpacity={values.parking}
-                  onPress={() =>
-                    handleChange({
-                      target: { name: "parking", value: true },
-                    })
-                  }
-                >
-                  <Text
-                    fontSize="md"
-                    color={values.parking ? "white" : "black"}
-                  >
-                    Yes
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  activeOpacity={values.parking}
-                  onPress={() =>
-                    handleChange({
-                      target: { name: "parking", value: false },
-                    })
-                  }
-                  style={{
-                    backgroundColor: values.parking ? "white" : "#00cc66",
-                    padding: 20,
-                    marginLeft: 5,
-                    borderRadius: 15,
-                  }}
-                >
-                  <Text
-                    fontSize="md"
-                    color={values.parking ? "black" : "white"}
-                  >
-                    No
-                  </Text>
-                </TouchableOpacity>
-              </Flex>
+              <Toggler
+                value={values.parking}
+                name="parking"
+                onChange={handleChange}
+              />
             </Box>
             <Box>
               <Text fontSize="xl" mt="5" fontWeight="bold">
                 Furnished
               </Text>
-              <Flex direction="row">
-                <TouchableOpacity
-                  style={{
-                    backgroundColor: values.furnished ? "#00cc66" : "white",
-                    padding: 20,
-                    borderRadius: 15,
-                  }}
-                  activeOpacity={values.furnished}
-                  onPress={() =>
-                    handleChange({
-                      target: { name: "furnished", value: true },
-                    })
-                  }
-                >
-                  <Text
-                    fontSize="md"
-                    color={values.furnished ? "white" : "black"}
-                  >
-                    Yes
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  activeOpacity={values.furnished}
-                  onPress={() =>
-                    handleChange({
-                      target: { name: "furnished", value: false },
-                    })
-                  }
-                  style={{
-                    backgroundColor: values.furnished ? "white" : "#00cc66",
-                    padding: 20,
-                    marginLeft: 5,
-                    borderRadius: 15,
-                  }}
-                >
-                  <Text
-                    fontSize="md"
-                    color={values.furnished ? "black" : "white"}
-                  >
-                    No
-                  </Text>
-                </TouchableOpacity>
-              </Flex>
+              <Toggler
+                value={values.furnished}
+                name="furnished"
+                onChange={handleChange}
+              />
             </Box>
-            <Text fontSize="xl" mt="5" fontWeight="bold">
-              Address
-            </Text>
-            <Input
-              value={values.address}
-              onChangeText={handleChange("address")}
-              bg="white"
-              borderRadius={15}
-              width="sm"
-            />
+
             <Box>
               <Text fontSize="xl" mt="5" fontWeight="bold">
                 Offer
               </Text>
-              <Flex direction="row">
-                <TouchableOpacity
-                  style={{
-                    backgroundColor: values.offer ? "#00cc66" : "white",
-                    padding: 20,
-                    borderRadius: 15,
-                  }}
-                  activeOpacity={values.offer}
-                  onPress={() =>
-                    handleChange({
-                      target: { name: "offer", value: true },
-                    })
-                  }
-                >
-                  <Text fontSize="md" color={values.offer ? "white" : "black"}>
-                    Yes
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  activeOpacity={values.offer}
-                  onPress={() =>
-                    handleChange({
-                      target: { name: "offer", value: false },
-                    })
-                  }
-                  style={{
-                    backgroundColor: values.offer ? "white" : "#00cc66",
-                    padding: 20,
-                    marginLeft: 5,
-                    borderRadius: 15,
-                  }}
-                >
-                  <Text
-                    fontSize="md"
-                    color={values.furnished ? "black" : "white"}
-                  >
-                    No
-                  </Text>
-                </TouchableOpacity>
-              </Flex>
+              <Toggler
+                value={values.offer}
+                name="offer"
+                onChange={handleChange}
+              />
             </Box>
             <Box
               style={{
@@ -432,35 +318,15 @@ const CreateListingScreen = () => {
               <Text fontSize="sm" mt="1" fontWeight="bold">
                 The first image will be the cover (max 6).
               </Text>
-              <TouchableOpacity
-                onPress={async () => {
-                  const updatedimages = await selectImages();
-                  handleChange({
-                    target: {
-                      name: "images",
-                      value: updatedimages,
-                    },
-                  });
-                }}
-                activeOpacity={values.images}
-              >
-                <Text
-                  fontSize="sm"
-                  textAlign="center"
-                  p="2"
-                  shadow="5"
-                  fontWeight="bold"
-                  mt="1"
-                  bg="#00cc66"
-                  borderRadius="lg"
-                  color="white"
-                >
-                  Select Images
-                </Text>
-              </TouchableOpacity>
+              <SelectImageButton
+                selectImage={selectImages}
+                value={values.images}
+                name="images"
+                onChange={handleChange}
+              />
 
               {values.images && (
-                <Flex direction="row" mt="1">
+                <ScrollView horizontal mt="1">
                   {values.images.map((image, index) => (
                     <Image
                       key={index}
@@ -475,7 +341,7 @@ const CreateListingScreen = () => {
                       shadow="9"
                     />
                   ))}
-                </Flex>
+                </ScrollView>
               )}
               <TouchableOpacity onPress={handleSubmit}>
                 <Text
