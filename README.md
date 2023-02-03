@@ -28,11 +28,10 @@ yarn react-native-start
 
 * Website: https://atayevibrahim-portfolio.vercel.app/
 * Github: [@Atayev](https://github.com/Atayev)
-* LinkedIn: [@Ibrahim Atayev](https://linkedin.com/in/Ibrahim Atayev)
+* LinkedIn: [@Ibrahim Atayev](https://www.linkedin.com/in/atayevibrahim/)
 
 ## Show your support
 
 Give a ⭐️ if this project helped you!
 
 ***
-_This README was generated with ❤️ by [readme-md-generator](https://github.com/kefranabg/readme-md-generator)_
