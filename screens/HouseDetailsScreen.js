@@ -1,11 +1,9 @@
 import React from "react";
-import { Container, Box, Text, ScrollView, Image, Flex } from "native-base";
+import {  Box, Text, ScrollView, Image, Flex } from "native-base";
 import Map from "../components/Map";
-import { TouchableOpacity } from "react-native";
+import CustomButton from "../components/CustomButton";
 const HouseDetailsScreen = ({ route }) => {
   const { listing } = route.params;
-  console.log("this is", listing.geolocation.lat, listing.geolocation.lng);
-
   const {
     address,
     bedrooms,
@@ -15,17 +13,13 @@ const HouseDetailsScreen = ({ route }) => {
     furnished,
     geolocation: { lat, lng },
     imgUrls,
-    key,
-    latitude,
-    longtitude,
     location,
     name,
     offer,
     parking,
     type,
-    userRef,
   } = listing;
-  console.log(listing);
+  const handleContact = () => {};
   return (
     <Box p="2" w="full" height="full" bg="#f2f4f8">
       <ScrollView horizontal mt="1" showsHorizontalScrollIndicator={false}>
@@ -106,21 +100,7 @@ const HouseDetailsScreen = ({ route }) => {
           latitude={listing.geolocation.lat}
         />
       </Box>
-      <TouchableOpacity>
-        <Text
-          fontSize="lg"
-          textAlign="center"
-          p="2"
-          shadow="5"
-          fontWeight="bold"
-          mt="2"
-          bg="#00cc66"
-          borderRadius="lg"
-          color="white"
-        >
-          Contact Landlord
-        </Text>
-      </TouchableOpacity>
+      <CustomButton onPress={() => handleContact()} name="Contact Landlord" />
     </Box>
   );
 };

@@ -5,11 +5,11 @@ import {
   Heading,
   Text,
   Input,
-  FormControl,
   Stack,
   Pressable,
   IconButton,
   Flex,
+  useToast,
 } from "native-base";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
@@ -17,10 +17,14 @@ import { Formik } from "formik";
 import { registerValidationSchema } from "../utils/validationSchemas";
 import auth from "@react-native-firebase/auth";
 import firestore from "@react-native-firebase/firestore";
-
+import {
+  GoogleSignin,
+  GoogleSigninButton,
+} from "@react-native-google-signin/google-signin";
 const SignUpModal = () => {
   const [show, setShow] = useState(false);
   const navigation = useNavigation();
+  const toast = useToast();
   //Google register
   const handleGRegister = () => {};
   const handleRegister = async (values) => {
@@ -34,6 +38,20 @@ const SignUpModal = () => {
       const valuesCopy = { ...values, timestamp: firestore.Timestamp.now() };
       delete valuesCopy.password;
       await firestore().collection("users").doc(user.uid).set(valuesCopy);
+      toast.show({
+        render: () => {
+          return (
+            <Box bg="#00cc66" px="2" py="1" ml="5" rounded="sm" mb={5}>
+              <Text fontSize="lg" color="white">
+                See you soon...
+              </Text>
+            </Box>
+          );
+        },
+        placement: "top",
+        duration: 2000,
+        avoidKeyboard: true,
+      });
       navigation.navigate("SignIn");
     } catch (error) {
       const { code } = error;
@@ -46,7 +64,7 @@ const SignUpModal = () => {
       }
     }
   };
-
+  
   return (
     <Container padding={4} w="full">
       <Heading paddingTop={10}>

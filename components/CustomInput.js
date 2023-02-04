@@ -1,15 +1,16 @@
 import React from "react";
 import { Input } from "native-base";
-const InputDefault = ({ value, onChange, name,w }) => {
+const CustomInput = ({ value, onChange, name, w, type }) => {
   return (
     <Input
       value={value}
-      onChangeText={() => onChange(name)}
+      onChangeText={onChange(name)}
       bg="white"
       borderRadius={15}
       width={w}
+      keyboardType={type}
     />
   );
 };
 
-export default InputDefault;
+export default CustomInput;

@@ -8,25 +8,56 @@ import {
   Pressable,
   IconButton,
   Flex,
+  Box,
 } from "native-base";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { Formik } from "formik";
 import { loginValidationSchema } from "../utils/validationSchemas";
 import auth from "@react-native-firebase/auth";
+import { useToast } from "native-base";
+import {
+  GoogleSignin,
+  GoogleSigninButton,
+} from "@react-native-google-signin/google-signin";
+
 const SignIn = () => {
   const [show, setShow] = useState(false);
   const navigation = useNavigation();
-
+  const toast = useToast();
   //Google authetification
-  const handleGLogin = () => {};
+  const handleGLogin = async () => {
+    GoogleSignin.configure({
+      webClientId:
+        "909261236411-u984t3amc1ttkiigj081ogp5hjhsaims.apps.googleusercontent.com",
+    });
+    await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
+    const { idToken } = await GoogleSignin.signIn();
+
+    const googleCredential = auth.GoogleAuthProvider.credential(idToken);
+
+    return auth().signInWithCredential(googleCredential);
+  };
   const handleLogin = async (values) => {
     try {
       const { email, password } = values;
       await auth().signInWithEmailAndPassword(email, password);
-      navigation.navigate("Explore");
+      toast.show({
+        render: () => {
+          return (
+            <Box bg="#00cc66" px="2" py="1" rounded="sm" ml="5" mb={5}>
+              <Text fontSize="lg" color="white">
+                Welcome...
+              </Text>
+            </Box>
+          );
+        },
+        placement: "top",
+        duration: 2000,
+        avoidKeyboard: true,
+      });
     } catch (error) {
-      console.log("something went wrong");
+      console.error("something went wrong", error);
     }
   };
 
@@ -146,10 +177,12 @@ const SignIn = () => {
       </Formik>
 
       <Flex justify="center" align="center" w="96" mt={10}>
-        <Text fontSize="md">Sign In With</Text>
-        <IconButton
+        <Text fontSize="md">Sign in with</Text>
+        <GoogleSigninButton
+          style={{ width: 72, height: 60 }}
+          size={GoogleSigninButton.Size.Icon}
+          color={GoogleSigninButton.Color.Light}
           onPress={handleGLogin}
-          icon={<Ionicons name="logo-google" size={30} color="#00cc66" />}
         />
         <Text fontSize="md">
           Do not have an account?{" "}

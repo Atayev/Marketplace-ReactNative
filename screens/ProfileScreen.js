@@ -10,6 +10,7 @@ import {
   Input,
   Stack,
   Box,
+  useToast,
 } from "native-base";
 import { Loading } from "../components/Loading";
 import { Ionicons } from "@expo/vector-icons";
@@ -19,7 +20,7 @@ const ProfileScreen = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [changeDetails, setChangeDetails] = useState(false);
   const [user, setUser] = useState();
-
+  const toast = useToast();
   useEffect(() => {
     setIsLoading(true);
     const subscriber = auth().onAuthStateChanged((user) => {
@@ -33,7 +34,20 @@ const ProfileScreen = ({ navigation }) => {
   const handleLogout = async () => {
     try {
       await auth().signOut();
-      console.log("user signed out");
+      toast.show({
+        render: () => {
+          return (
+            <Box bg="#00cc66" px="2" py="1" ml="5" rounded="sm" mb={5}>
+              <Text fontSize="lg" color="white">
+                See you soon...
+              </Text>
+            </Box>
+          );
+        },
+        placement: "top",
+        duration: 2000,
+        avoidKeyboard: true,
+      });
     } catch (error) {
       console.log("something went wrong");
     }
@@ -107,6 +121,9 @@ const ProfileScreen = ({ navigation }) => {
               borderRadius="xl"
               shadow="5"
             >
+              <Text fontSize="md" fontWeight="bold">
+                Name:
+              </Text>
               <Input
                 value={values.name}
                 onChangeText={handleChange("name")}
@@ -116,6 +133,9 @@ const ProfileScreen = ({ navigation }) => {
                 borderColor="white"
                 p="0"
               />
+              <Text fontSize="md" fontWeight="bold">
+                E-mail:
+              </Text>
               <Input
                 value={values.email}
                 onChangeText={handleChange("email")}
@@ -137,15 +157,8 @@ const ProfileScreen = ({ navigation }) => {
         mt="10"
         p="3"
         onPress={() => navigation.navigate("CreateaListing")}
-        
       >
-        <Text
-          color="black"
-          fontWeight="bold"
-          fontSize="md"
-          pt="1"
-         
-        >
+        <Text color="black" fontWeight="bold" fontSize="md" pt="1">
           Sell or Rent your Home/Apart/House
         </Text>
       </Button>

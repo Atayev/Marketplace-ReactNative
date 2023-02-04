@@ -9,7 +9,7 @@ import {
   ScrollView,
   Image,
 } from "native-base";
-import Input from "../components/Input";
+import CustomInput from "../components/CustomInput";
 import { launchImageLibrary } from "react-native-image-picker";
 import { Button, TouchableOpacity } from "react-native";
 import { Formik } from "formik";
@@ -19,6 +19,9 @@ import auth from "@react-native-firebase/auth";
 import firestore from "@react-native-firebase/firestore";
 import Toggler from "../components/Toggler";
 import SelectImageButton from "../components/SelectImageButton";
+import SelectImageScroller from "../components/SelectImageScroller";
+import CustomButton from "../components/CustomButton";
+import { listingValidationSchema } from "../utils/validationSchemas";
 const CreateListingScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(false);
   const [geoLocation, setGeoLocation] = useState(true);
@@ -38,13 +41,11 @@ const CreateListingScreen = ({ navigation }) => {
   });
 
   const selectImages = async () => {
-    setLoading(true);
     const result = await launchImageLibrary({
       selectionLimit: 6,
       quality: 1,
       mediaType: "photo",
     });
-    setLoading(false);
     const resultArr = result.assets.map((image) => image.uri);
     return resultArr;
   };
@@ -53,7 +54,6 @@ const CreateListingScreen = ({ navigation }) => {
     setLoading(true);
     let formDataCopy = {};
     if (Number(values.discountedPrice) > Number(values.regularPrice)) {
-      setLoading(false);
       alert("discounted price cant be greater than regular");
       return;
     }
@@ -87,6 +87,7 @@ const CreateListingScreen = ({ navigation }) => {
       alert("User is not signed in");
       return;
     }
+
     // Store image in Firebase Storage
     const storeImage = async (image) => {
       const fileName = `${user.uid}-${image}`;
@@ -100,7 +101,6 @@ const CreateListingScreen = ({ navigation }) => {
           );
         });
         await upload;
-        console.log("image Uploaded");
         const downloadUrl = await storageRef.getDownloadURL();
         return downloadUrl;
       } catch (error) {
@@ -122,6 +122,7 @@ const CreateListingScreen = ({ navigation }) => {
       formDataCopy = {
         ...values,
         imgUrls,
+        userRef: user.uid,
         geolocation: formData.geolocation,
         timestamp: firestore.Timestamp.now(),
       };
@@ -130,16 +131,15 @@ const CreateListingScreen = ({ navigation }) => {
       !formDataCopy.offer && delete formDataCopy.discountedPrice;
       await firestore().collection("listings").add(formDataCopy);
       const listing = { ...formDataCopy };
+
       navigation.navigate("HouseDetailsScreen", { listing });
       setLoading(false);
     } catch (error) {
       setLoading(false);
-      alert("something went wrong");
-      console.error(error);
     }
   };
 
-  if (loading) <Loading />;
+  if (loading) return <Loading />;
   return (
     <ScrollView p="2" w="full" h="full" bg="#f2f4f8">
       <Heading paddingTop={10}>
@@ -148,6 +148,7 @@ const CreateListingScreen = ({ navigation }) => {
         </Text>
       </Heading>
       <Formik
+        validationSchema={listingValidationSchema}
         initialValues={formData}
         onSubmit={(values) => handleUpload(values)}
       >
@@ -202,43 +203,67 @@ const CreateListingScreen = ({ navigation }) => {
             <Text fontSize="xl" mt="5" fontWeight="bold">
               Name
             </Text>
-            <Input
+            <CustomInput
               value={values.name}
               onChange={handleChange}
               name="name"
               w="sm"
             />
+            {errors.name && (
+              <Text fontSize="sm" color="red.500" pl={3}>
+                {errors.name}
+              </Text>
+            )}
+
             <Text fontSize="xl" mt="5" fontWeight="bold">
               Address
             </Text>
-            <Input
+            <CustomInput
               value={values.address}
               onChange={handleChange}
               name="address"
               w="sm"
             />
+            {errors.address && (
+              <Text fontSize="sm" color="red.500" pl={3}>
+                {errors.address}
+              </Text>
+            )}
             <Flex direction="row" w="full">
               <Box mr="5" w="1/3">
                 <Text fontSize="xl" mt="5" fontWeight="bold">
                   Bedrooms
                 </Text>
-                <Input
+                <CustomInput
                   value={values.bedrooms}
                   onChange={handleChange}
                   name="bedrooms"
                   w="full"
+                  type="number-pad"
                 />
+                {errors.bedrooms && (
+                  <Text fontSize="sm" color="red.500" pl={3}>
+                    {errors.bedrooms}
+                  </Text>
+                )}
               </Box>
+
               <Box w="1/3">
                 <Text fontSize="xl" mt="5" fontWeight="bold">
                   Bathrooms
                 </Text>
-                <Input
+                <CustomInput
                   value={values.bathrooms}
                   onChange={handleChange}
                   name="bathrooms"
                   w="full"
+                  type="number-pad"
                 />
+                {errors.bathrooms && (
+                  <Text fontSize="sm" color="red.500" pl={3}>
+                    {errors.bathrooms}
+                  </Text>
+                )}
               </Box>
             </Flex>
             <Box>
@@ -281,14 +306,19 @@ const CreateListingScreen = ({ navigation }) => {
                 Regular price
               </Text>
               <Flex direction="row">
-                <Input
+                <CustomInput
                   value={values.regularPrice}
-                  onChangeText={handleChange("regularPrice")}
-                  bg="white"
-                  borderRadius={15}
-                  width="20"
-                  keyboardType="number-pad"
+                  onChange={handleChange}
+                  name="regularPrice"
+                  w="20"
+                  type="number-pad"
                 />
+                {errors.regularPrice && (
+                  <Text fontSize="sm" color="red.500" pl={3}>
+                    {errors.regularPrice}
+                  </Text>
+                )}
+
                 {values.type === "rent" && (
                   <Text fontSize="lg" mt="2" ml="2" fontWeight="bold">
                     /month
@@ -301,13 +331,12 @@ const CreateListingScreen = ({ navigation }) => {
                 <Text fontSize="xl" mt="5" fontWeight="bold">
                   Discounted Price
                 </Text>
-                <Input
+                <CustomInput
                   value={values.discountedPrice}
-                  onChangeText={handleChange("discountedPrice")}
-                  bg="white"
-                  borderRadius={15}
-                  width="20"
-                  keyboardType="number-pad"
+                  onChange={handleChange}
+                  name="discountedPrice"
+                  w="20"
+                  type="number-pad"
                 />
               </Box>
             )}
@@ -324,40 +353,17 @@ const CreateListingScreen = ({ navigation }) => {
                 name="images"
                 onChange={handleChange}
               />
-
-              {values.images && (
-                <ScrollView horizontal mt="1">
-                  {values.images.map((image, index) => (
-                    <Image
-                      key={index}
-                      source={{
-                        uri: image,
-                      }}
-                      w="70"
-                      h="70"
-                      alt="ff"
-                      mx="2"
-                      borderRadius="3xl"
-                      shadow="9"
-                    />
-                  ))}
-                </ScrollView>
-              )}
-              <TouchableOpacity onPress={handleSubmit}>
-                <Text
-                  fontSize="xl"
-                  textAlign="center"
-                  p="2"
-                  shadow="5"
-                  fontWeight="bold"
-                  mt="10"
-                  bg="#00cc66"
-                  borderRadius="lg"
-                  color="white"
-                >
-                  Create a listing
+              {errors.images && (
+                <Text fontSize="sm" color="red.500" pl={3}>
+                  {errors.images}
                 </Text>
-              </TouchableOpacity>
+              )}
+              {values.images && <SelectImageScroller images={values.images} />}
+              <CustomButton
+                onPress={handleSubmit}
+                name="Create a listing"
+                valid={!isValid}
+              />
             </Box>
           </Stack>
         )}
